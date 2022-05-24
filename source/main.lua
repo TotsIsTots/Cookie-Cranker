@@ -11,104 +11,52 @@ local test = 0
 
 playdate.display.setInverted(true)
 
--- shorten numbers
-function shortNumberString(number)
-    local steps = {
-        {1,""},
-        {1e3,"k"},
-        {1e6,"m"},
-        {1e9,"b"},
-        {1e12,"t"},
-        {1e15,"q"},
-        {1e18,"Q"},
-        {1e21, "s"},
-        {1e24, "S"},
-        {1e27, "o"},
-        {1e30, "n"},
-        {1e33, "d"},
-        -- {1e36, "ud"},
-        -- {1e39, "dd"},
-        -- {1e42, "td"},
-        -- {1e45, "qd"},
-        -- {1e48, "Qd"},
-        -- {1e51, "sd"},
-        -- {1e54, "Sd"},
-        -- {1e57, "od"},
-        -- {1e60, "nd"},
-        -- {1e63, "v"},
-        -- {1e66, "uv"},
-        -- {1e69, "dv"},
-        -- {1e72, "tv"},
-        -- {1e75, "qv"},
-        -- {1e78, "Qv"},
-        -- {1e81, "sv"},
-        -- {1e84, "Sv"},
-        -- {1e87, "ov"},
-        -- {1e90, "nv"},
-        -- {1e93, "t"},
-        -- {1e96, "ut"},
-        -- {1e99, "dt"},
-        -- {1e102, "tt"},
-        -- {1e105, "qt"},
-        -- {1e108, "Qt"},
-        -- {1e111, "st"},
-        -- {1e114, "St"},
-        -- {1e117, "ot"},
-        -- {1e120, "nt"},
-        -- {1e123, "e"},
-        -- {1e126, "ue"},
-        -- {1e129, "de"},
-        -- {1e132, "te"},
-        -- {1e135, "qe"},
-        -- {1e138, "Qe"},
-        -- {1e141, "se"},
-        -- {1e144, "Se"},
-        -- {1e147, "oe"},
-        -- {1e150, "ne"},
-        -- {1e153, "y"},
-        -- {1e156, "uy"},
-        -- {1e159, "dy"},
-        -- {1e162, "ty"},
-        -- {1e165, "qy"},
-        -- {1e168, "Qy"},
-        -- {1e171, "sy"},
-        -- {1e174, "Sy"},
-        -- {1e177, "oy"},
-        -- {1e180, "ny"},
-        -- {1e183, "z"},
-        -- {1e186, "uz"},
-        -- {1e189, "dz"},
-        -- {1e192, "tz"},
-        -- {1e195, "qz"},
-        -- {1e198, "Qz"},
-        -- {1e201, "sz"},
-        -- {1e204, "Sz"},
-        -- {1e207, "oz"},
-        -- {1e210, "nz"},
-        -- {1e213, "w"},
-        -- {1e216, "uw"},
-        -- {1e219, "dw"},
-        -- {1e222, "tw"},
-        -- {1e225, "qw"},
-        -- {1e228, "Qw"},
-        -- {1e231, "sw"},
-        -- {1e234, "Sw"},
-        -- {1e237, "ow"},
-        -- {1e240, "nw"},
-        {1e36, "TOO_MANY"}
+-- make a function that shortens numbers
+function shorten(num)
+    -- if num < 1e3 then
+    --     return num
+    -- elseif num < 1e6 then
+    --     return string.format("%.3fk", num/1e3)
+    -- elseif num < 1e9 then
+    --     return string.format("%.3fm", num/1e6)
+    -- elseif num < 1e12 then
+    --     return string.format("%.3fb", num/1e9)
+    -- elseif num < 1e15 then
+    --     return string.format("%.3ft", num/1e12)
+    -- elseif num < 1e18 then
+    --     return string.format("%.3fq", num/1e15)
+    -- elseif num < 1e21 then
+    --     return string.format("%.3fQ", num/1e18)
+    -- elseif num < 1e24 then
+    --     return string.format("%.3fs", num/1e21)
+    -- elseif num < 1e27 then
+    --     return string.format("%.3fS", num/1e24)
+    -- elseif num < 1e30 then
+    --     return string.format("%.3fo", num/1e27)
+    -- elseif num < 1e33 then
+    --     return string.format("%.3fn", num/1e30)
+    -- elseif num < 1e36 then
+    --     return string.format("%.3fd", num/1e33)
+    -- else
+    --     return string.format("%.3f TOO_MANY", num/1e36)
+    -- end
+    local abbrv = {
+        "%.3f",
+        "%.3fk",
+        "%.3fm",
+        "%.3fb",
+        "%.3ft",
+        "%.3fq",
+        "%.3fQ",
+        "%.3fs",
+        "%.3fS",
+        "%.3fo",
+        "%.3fn",
+        "%.3fd"
     }
-    for _,b in ipairs(steps) do
-        if b[1] <= number+1 then
-            steps.use = _
-        end
-    end
-    local result = string.format("%.3f", number / steps[steps.use][1])
-    if tonumber(result) >= 1e3 and steps.use < #steps then
-        steps.use = steps.use + 1
-        result = string.format("%.3f", tonumber(result) / 1e3)
-    end
-    
-    return string.gsub(string.format("%.1f", tonumber(result)), "%.0", "") .. steps[steps.use][2]
+    local i = math.max(math.floor((math.log(100, 10) / 3) + 1), 1)
+    print(i)
+    return string.format(abbrv[math.max(math.floor(math.log(num, 10) / 3) + 1, 1)], num / 10 ^ (math.max(math.floor(math.log(num, 10) / 3), 0) * 3))
 end
 
 -- background
@@ -126,6 +74,12 @@ local cookieImage = gfx.image.new("images/cookie")
 local cookieSprite = gfx.sprite.new(cookieImage)
 cookieSprite:moveTo(320, 160)
 cookieSprite:add()
+
+-- little cookie
+local smallCookieImage = gfx.image.new("images/smallcookie")
+local smallCookieSprite = gfx.sprite.new(smallCookieImage)
+smallCookieSprite:moveTo(83, 18)
+smallCookieSprite:add()
 
 -- cookies
 local cookies = 0
@@ -167,7 +121,7 @@ function pd.update()
     gfx.sprite.update()
 
     -- store code
-    gfx.drawText("*Store*    cost: " .. shortNumberString(prices[store:getSelectedRow()]), 14, 10)
+    gfx.drawText("*Store*       " .. shorten(prices[store:getSelectedRow()]), 14, 10)
     store:drawInRect(9, 30, 180, 207)
     if pd.buttonJustPressed(pd.kButtonDown) then
         store:selectNextRow(1)    
@@ -187,15 +141,17 @@ function pd.update()
     -- cookie code
     crankSpeed = pd.getCrankChange(change)
     cookies += math.abs(crankSpeed/360)
-    gfx.drawTextAligned(shortNumberString(math.floor(cookies)) .. " cookies", 320, 5, kTextAlignment.center) -- cookie count
+    gfx.drawTextAligned(shorten(math.floor(cookies)) .. " cookies", 320, 5, kTextAlignment.center) -- cookie count
     gfx.drawRoundRect(295, 22, 50, 10, 2) -- cookie progress outline
     gfx.fillRoundRect(295, 22, math.max(cookies - math.floor(cookies), .08) * 50, 10, 2) -- cookie progress
-    gfx.drawTextAligned(shortNumberString(CpS) .. " CpS", 320, 35, kTextAlignment.center) -- CpS
+    gfx.drawTextAligned(shorten(CpS) .. " CpS", 320, 35, kTextAlignment.center) -- CpS
     cookies = cookies + (CpS/30)
 
     -- drill code
     drillState = math.floor(360 - pd.getCrankPosition() / 45) % 4 + 1
     drillSprite:setImage(drillTable:getImage(drillState))
+    
+    pd.drawFPS()
 
     pd.timer.updateTimers()
 end
