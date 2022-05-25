@@ -23,7 +23,7 @@ if (!$dontbuild)
 {
     pdc -sdkpath "$Env:PLAYDATE_SDK_PATH" "$source" "$pdx"
     $compress = @{
-        Path = ".\builds\Cookie Cranker.pdx"
+        Path = ".\builds\Cookie Cranker.pdx\*"
         CompressionLevel = "Fastest"
         DestinationPath = ".\builds\Cookie Cranker.pdx.zip"
       }
