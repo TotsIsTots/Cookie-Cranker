@@ -123,7 +123,7 @@ function pd.update()
         store:selectPreviousRow(1)
     end
     if pd.buttonJustPressed(pd.kButtonA) and cookies >= math.ceil(prices[store:getSelectedRow()]) then
-        cookies = cookies - prices[store:getSelectedRow()]
+        cookies = cookies - math.ceil(prices[store:getSelectedRow()])
         CpS += buildingCpS[store:getSelectedRow()]
         numberPurchased[store:getSelectedRow()] += 1
         prices[store:getSelectedRow()] = prices[store:getSelectedRow()] * 1.15
@@ -143,13 +143,6 @@ function pd.update()
     -- drill code
     drillState = math.floor(360 - pd.getCrankPosition() / 45) % 4 + 1
     drillSprite:setImage(drillTable:getImage(drillState))
-    
-    if(pd.buttonJustPressed(pd.kButtonRight)) then
-        cookies += 1e30
-    end
-    if(pd.buttonJustPressed(pd.kButtonLeft)) then
-        cookies = 0
-    end
 
     -- garbage collection
     if gcframes == gcint then
