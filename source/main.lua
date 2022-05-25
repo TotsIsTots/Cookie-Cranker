@@ -11,52 +11,32 @@ local test = 0
 
 playdate.display.setInverted(true)
 
+-- make a function that rounds a number to x decimal places
+function round(num, idp)
+  local mult = 10^(idp or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+
 -- make a function that shortens numbers
 function shorten(num)
-    -- if num < 1e3 then
-    --     return num
-    -- elseif num < 1e6 then
-    --     return string.format("%.3fk", num/1e3)
-    -- elseif num < 1e9 then
-    --     return string.format("%.3fm", num/1e6)
-    -- elseif num < 1e12 then
-    --     return string.format("%.3fb", num/1e9)
-    -- elseif num < 1e15 then
-    --     return string.format("%.3ft", num/1e12)
-    -- elseif num < 1e18 then
-    --     return string.format("%.3fq", num/1e15)
-    -- elseif num < 1e21 then
-    --     return string.format("%.3fQ", num/1e18)
-    -- elseif num < 1e24 then
-    --     return string.format("%.3fs", num/1e21)
-    -- elseif num < 1e27 then
-    --     return string.format("%.3fS", num/1e24)
-    -- elseif num < 1e30 then
-    --     return string.format("%.3fo", num/1e27)
-    -- elseif num < 1e33 then
-    --     return string.format("%.3fn", num/1e30)
-    -- elseif num < 1e36 then
-    --     return string.format("%.3fd", num/1e33)
-    -- else
-    --     return string.format("%.3f TOO_MANY", num/1e36)
-    -- end
     local abbrv = {
-        "%.3f",
-        "%.3fk",
-        "%.3fm",
-        "%.3fb",
-        "%.3ft",
-        "%.3fq",
-        "%.3fQ",
-        "%.3fs",
-        "%.3fS",
-        "%.3fo",
-        "%.3fn",
-        "%.3fd"
+        "",
+        "k",
+        "m",
+        "b",
+        "t",
+        "q",
+        "Q",
+        "s",
+        "S",
+        "o",
+        "n",
+        "d"
     }
-    local i = math.max(math.floor((math.log(100, 10) / 3) + 1), 1)
-    print(i)
-    return string.format(abbrv[math.max(math.floor(math.log(num, 10) / 3) + 1, 1)], num / 10 ^ (math.max(math.floor(math.log(num, 10) / 3), 0) * 3))
+    -- return string.format(abbrv[math.max(math.floor(math.log(num, 10) / 3) + 1, 1)], num / 10 ^ (math.max(math.floor(math.log(num, 10) / 3), 0) * 3))
+    return string.gsub(round(num / 10 ^ (math.max(math.floor(math.log(num, 10) / 3), 0) * 3), 3) .. abbrv[math.max(math.floor(math.log(num, 10) / 3) + 1, 1)], "%.0", "")
+
+
 end
 
 -- background
@@ -98,7 +78,7 @@ drillSprite:moveTo(320, 113)
 drillSprite:add()
 
 -- store
-local menuOptions = {"Drill", "Grandma", "Farm", "Factory", "Mine", "Shipment", "Alchemy Lab", "Portal", "Time Machine", "Antimatter Condenser", "Prism", "Chancemaker", "Fractal Engine", "Javascript Console", "Idleverse"}
+local menuOptions = {"Drill", "Grandma", "Farm", "Mine", "Factory", "Bank", "Temple", "Wizard tower", "Shipment", "Alchemy Lab", "Portal", "Time Machine", "Antimatter Condenser", "Prism", "Chancemaker", "Fractal Engine", "Javascript Console", "Idleverse"}
 local numberPurchased = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 local prices = {15, 100, 1100, 12000, 130000, 1400000, 20000000, 330000000, 5100000000, 75000000000, 1000000000000, 14000000000000, 170000000000000, 2100000000000000, 26000000000000000, 310000000000000000, 71000000000000000000, 12000000000000000000000}
 local buildingCpS = {.1, 1, 8, 47, 260, 1400, 7800, 44000, 260000, 1600000, 10000000, 65000000, 430000000, 2900000000, 21000000000, 150000000000, 1100000000000, 8300000000000}
@@ -108,12 +88,14 @@ store:setContentInset(0, 0, 1, 1)
 
 function store:drawCell(section, row, column, selected, x, y, width, height)
     if selected then
-            gfx.fillRoundRect(x, y, width, 20, 4)
-            gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
+        gfx.fillRoundRect(x, y, 180, 20, 4)
+        gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
     else
-            gfx.setImageDrawMode(gfx.kDrawModeCopy)
+        gfx.setImageDrawMode(gfx.kDrawModeCopy)
     end
     gfx.drawTextInRect(menuOptions[row], x+5, y+2, width, height)
+    gfx.setImageDrawMode(gfx.kDrawModeCopy)
+    gfx.drawTextInRect(shorten(numberPurchased[row]), x+width-56, y+2, 56, height, nil, nil, kTextAlignment.right)
 end
 
 -- code
@@ -121,15 +103,15 @@ function pd.update()
     gfx.sprite.update()
 
     -- store code
-    gfx.drawText("*Store*       " .. shorten(prices[store:getSelectedRow()]), 14, 10)
-    store:drawInRect(9, 30, 180, 207)
+    gfx.drawText("*Store*       " .. shorten(math.ceil(prices[store:getSelectedRow()])), 14, 10)
+    store:drawInRect(9, 30, 225, 207)
     if pd.buttonJustPressed(pd.kButtonDown) then
         store:selectNextRow(1)    
     end
     if pd.buttonJustPressed(pd.kButtonUp) then
         store:selectPreviousRow(1)
     end
-    if pd.buttonJustPressed(pd.kButtonA) and cookies >= prices[store:getSelectedRow()] then
+    if pd.buttonJustPressed(pd.kButtonA) and cookies >= math.ceil(prices[store:getSelectedRow()]) then
         cookies = cookies - prices[store:getSelectedRow()]
         CpS += buildingCpS[store:getSelectedRow()]
         numberPurchased[store:getSelectedRow()] += 1
@@ -151,6 +133,13 @@ function pd.update()
     drillState = math.floor(360 - pd.getCrankPosition() / 45) % 4 + 1
     drillSprite:setImage(drillTable:getImage(drillState))
     
+    if(pd.buttonJustPressed(pd.kButtonRight)) then
+        cookies += 1e30
+    end
+    if(pd.buttonJustPressed(pd.kButtonLeft)) then
+        cookies = 0
+    end
+
     pd.drawFPS()
 
     pd.timer.updateTimers()
