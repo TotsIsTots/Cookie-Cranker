@@ -41,7 +41,11 @@ function shorten(num)
         "n",
         "d"
     }
-    return string.gsub(round(num / 10 ^ (math.max(math.floor(math.log(num, 10) / 3), 0) * 3), 3) .. abbrv[math.max(math.floor(math.log(num, 10) / 3) + 1, 1)], "%.0", "")
+    local result = round(num / 10 ^ (math.max(math.floor(math.log(num, 10) / 3), 0) * 3), 3) .. abbrv[math.max(math.floor(math.log(num, 10) / 3) + 1, 1)]
+    if num < 1000 then
+        result = string.gsub(result, "%.0", "")
+    end
+    return result
 end
 
 -- background
