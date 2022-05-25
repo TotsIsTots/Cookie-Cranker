@@ -33,10 +33,7 @@ function shorten(num)
         "n",
         "d"
     }
-    -- return string.format(abbrv[math.max(math.floor(math.log(num, 10) / 3) + 1, 1)], num / 10 ^ (math.max(math.floor(math.log(num, 10) / 3), 0) * 3))
     return string.gsub(round(num / 10 ^ (math.max(math.floor(math.log(num, 10) / 3), 0) * 3), 3) .. abbrv[math.max(math.floor(math.log(num, 10) / 3) + 1, 1)], "%.0", "")
-
-
 end
 
 -- background
