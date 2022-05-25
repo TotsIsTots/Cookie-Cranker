@@ -7,9 +7,17 @@ import "CoreLibs/ui"
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 local crankSpeed = nil
-local test = 0
+local lastTime = 0
+local preFPS = 15 --15 is an initial fps guess, can't be nil because 
+local FPS = 15    --math is nescessary for FPS calculation to work
+
 
 playdate.display.setInverted(true)
+
+-- Garbage collection
+pd.setCollectsGarbage(false)
+local gcint = 10
+local gcframes = 0
 
 -- make a function that rounds a number to x decimal places
 function round(num, idp)
@@ -99,6 +107,12 @@ end
 function pd.update()
     gfx.sprite.update()
 
+    --calculate FPS
+    preFPS = FPS
+    FPS = 1000 / (pd.getCurrentTimeMilliseconds() - lastTime)
+    FPS = (.95 * preFPS) + (.05 * FPS) --smooth FPS
+    lastTime = pd.getCurrentTimeMilliseconds()
+
     -- store code
     gfx.drawText("*Store*       " .. shorten(math.ceil(prices[store:getSelectedRow()])), 14, 10)
     store:drawInRect(9, 30, 225, 207)
@@ -124,7 +138,7 @@ function pd.update()
     gfx.drawRoundRect(295, 22, 50, 10, 2) -- cookie progress outline
     gfx.fillRoundRect(295, 22, math.max(cookies - math.floor(cookies), .08) * 50, 10, 2) -- cookie progress
     gfx.drawTextAligned(shorten(CpS) .. " CpS", 320, 35, kTextAlignment.center) -- CpS
-    cookies = cookies + (CpS/30)
+    cookies += CpS / FPS
 
     -- drill code
     drillState = math.floor(360 - pd.getCrankPosition() / 45) % 4 + 1
@@ -137,7 +151,13 @@ function pd.update()
         cookies = 0
     end
 
-    pd.drawFPS()
+    -- garbage collection
+    if gcframes == gcint then
+        gcframes = 0
+        collectgarbage()
+    else
+        gcframes = gcframes + 1
+    end
 
     pd.timer.updateTimers()
 end
