@@ -95,6 +95,37 @@ local store = pd.ui.gridview.new(0, 20)
 store:setNumberOfRows(#menuOptions)
 store:setContentInset(0, 0, 1, 1)
 
+-- load save
+if pd.datastore.read("save") ~= nil then
+    local save = pd.datastore.read("save")
+    cookies = save[1]
+    numberPurchased = save[2]
+    for i = 1, #numberPurchased do
+        prices[i] = prices[i] * (1.15 ^ numberPurchased[i])
+    end
+    for i = 1, #numberPurchased do
+        CpS += buildingCpS[i] * numberPurchased[i]
+    end
+else
+    local save = {cookies, numberPurchased}
+    pd.datastore.write(save, "save", true)
+end
+
+function playdate.gameWillTerminate()
+    -- load into save file
+    save = {cookies, numberPurchased}
+    pd.datastore.write(save, "save", true)
+    print("Saved")
+end
+
+function playdate.deviceWillSleep()
+    -- load into save file
+    save[1] = cookies
+    save[2] = numberPurchased
+    pd.datastore.write(save, "save", true)
+    print("Saved")
+end
+
 function store:drawCell(section, row, column, selected, x, y, width, height)
     if selected then
         gfx.fillRoundRect(x, y, 180, 20, 4)
@@ -158,3 +189,4 @@ function pd.update()
 
     pd.timer.updateTimers()
 end
+
