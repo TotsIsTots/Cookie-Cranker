@@ -77,17 +77,23 @@ local CpS = 0
 
 -- drill
 local drillState = 1
-
-local drill1Table = gfx.imagetable.new("images/drill1/drill1")
-
-local drillTable = drill1Table
-
+local drillTable = gfx.imagetable.new("images/drill1/drill1")
 local drillSprite = gfx.sprite.new(drillTable:getImage(drillState))
 drillSprite:setCenter(.5, 1)
 drillSprite:moveTo(320, 113)
 drillSprite:add()
+local drillHum = pd.sound.fileplayer.new(10)
+drillHum:load("sounds/hum")
 
-local drillHum = pd.sound.sampleplayer.new("sounds/hum.wav")
+-- mini drills
+local miniDrillState = 1
+local miniDrillTable = gfx.imagetable.new("images/minidrill/minidrill")
+local radian = 0.5 * math.pi
+local miniDrillSprite = gfx.sprite.new(miniDrillTable:getImage(miniDrillState))
+miniDrillSprite:setClipRect(243, 4, 153, 232)
+miniDrillSprite:moveTo(395, 235)
+miniDrillSprite:add()
+
 
 -- store
 local menuOptions = {"Drill", "Grandma", "Farm", "Mine", "Factory", "Bank", "Temple", "Wizard tower", "Shipment", "Alchemy Lab", "Portal", "Time Machine", "Antimatter Condenser", "Prism", "Chancemaker", "Fractal Engine", "Javascript Console", "Idleverse"}
@@ -182,7 +188,7 @@ function pd.update()
     end
     store:drawInRect(9, 30, 225, 207)
     if pd.buttonJustPressed(pd.kButtonDown) then
-        store:selectNextRow(1)    
+        store:selectNextRow(1)
     end
     if pd.buttonJustPressed(pd.kButtonUp) then
         store:selectPreviousRow(1)
@@ -203,9 +209,10 @@ function pd.update()
         buying = not buying
     end
 
-    --find the number of prices less than or equal to the current cookies
+    --find new menu options
+
     numberOfPrices = 0
-    for i = 1, #prices do
+    for i = 1, menuOptionsUnlocked + 1 do
         if cookies >= prices[i] then
             numberOfPrices += 1
         end
@@ -217,24 +224,30 @@ function pd.update()
 
     -- cookie code
     cookies += math.abs(crankSpeed/360)
-    gfx.drawTextAligned(shorten(math.floor(cookies)) .. " cookies", 320, 5, kTextAlignment.center) -- cookie count
-    gfx.drawRoundRect(295, 22, 50, 10, 2) -- cookie progress outline
-    gfx.fillRoundRect(295, 22, math.max(cookies - math.floor(cookies), .08) * 50, 10, 2) -- cookie progress
-    gfx.drawTextAligned(shorten(CpS) .. " CpS", 320, 35, kTextAlignment.center) -- CpS
+    gfx.drawTextAligned(shorten(math.floor(cookies)) .. " cookies", 320, 10, kTextAlignment.center) -- cookie count
+    gfx.drawTextAligned(shorten(CpS) .. " CpS", 320, 30, kTextAlignment.center) -- CpS
     cookies += CpS / FPS
 
     -- drill code
     drillState = math.floor(360 - pd.getCrankPosition() / 45) % 4 + 1
     drillSprite:setImage(drillTable:getImage(drillState))
-    if easedCrankSpeed > 0 then
-        if drillHum:isPlaying() == false then
-            drillHum:play(0, easedCrankSpeed/80)
+    if easedCrankSpeed ~= 0 then
+        if drillHum:isPlaying() then
+            drillHum:setRate(math.abs(easedCrankSpeed/80))
         else
+            drillHum:play(0)
             drillHum:setRate(math.abs(easedCrankSpeed/80))
         end
     else
         drillHum:stop()
     end
+
+    -- mini drill code
+    -- for i = 1, numberPurchased[1] do
+    --     miniDrillSprite:draw(250, i * 10 + 10)
+    -- end
+    --miniDrillSprite:moveTo(55 * math.sin(radian) + 320, 55 * math.cos(radian) + 160)
+    --miniDrillSprite:setRotation(270)
 
     -- garbage collection
     if gcframes == gcint then
@@ -246,4 +259,3 @@ function pd.update()
 
     pd.timer.updateTimers()
 end
-
