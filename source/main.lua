@@ -86,13 +86,13 @@ local drillHum = pd.sound.fileplayer.new(10)
 drillHum:load("sounds/hum")
 
 -- mini drills
-local miniDrillState = 1
-local miniDrillTable = gfx.imagetable.new("images/minidrill/minidrill")
-local radian = 0.5 * math.pi
-local miniDrillSprite = gfx.sprite.new(miniDrillTable:getImage(miniDrillState))
-miniDrillSprite:setClipRect(243, 4, 153, 232)
-miniDrillSprite:moveTo(395, 235)
-miniDrillSprite:add()
+-- local miniDrillState = 1
+-- local miniDrillTable = gfx.imagetable.new("images/minidrill/minidrill")
+-- local radian = 0.5 * math.pi
+-- local miniDrillSprite = gfx.sprite.new(miniDrillTable:getImage(miniDrillState))
+-- miniDrillSprite:setClipRect(243, 4, 153, 232)
+-- miniDrillSprite:moveTo(395, 235)
+-- miniDrillSprite:add()
 
 
 -- store
