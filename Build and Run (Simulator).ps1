@@ -22,7 +22,7 @@ if (!$dontbuild)
 if (!$dontbuild)
 {
     pdc -sdkpath "$Env:PLAYDATE_SDK_PATH" "$source" "$pdx"
-    Compress-Archive -LiteralPath .\builds\CookieCranker.pdx -DestinationPath .\builds\CookieCranker.pdx.zip
+    #Compress-Archive -LiteralPath .\builds\CookieCranker.pdx -DestinationPath .\builds\CookieCranker.pdx.zip
 }
 
 # Close Simulator
