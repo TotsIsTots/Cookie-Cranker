@@ -1,5 +1,7 @@
 # Changelog
 
+v0.4.0 Added mini drills (and disabler), dark mode toggle, and game resetting! _6/5/22_
+
 v0.3.1 Fixed sound and removed cookie progress bar _6/3/22_
 
 v0.3.0 Added drill sound, building unlocking, and selling _6/2/22_

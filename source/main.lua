@@ -9,24 +9,21 @@ local gfx <const> = pd.graphics
 local easedCrankSpeed = 0
 local crankSpeed = 0
 local lastTime = 0
-local preFPS = 15 --15 is an initial fps guess, can't be nil because 
+local preFPS = 15 --15 is an initial fps guess, can't be nil because
 local FPS = 15    --math is nescessary for FPS calculation to work
 
-
-playdate.display.setInverted(true)
+pd.display.setInverted(true)
 
 -- Garbage collection
 pd.setCollectsGarbage(false)
 local gcint = 10
 local gcframes = 0
 
--- make a function that rounds a number to x decimal places
 function round(num, idp)
   local mult = 10^(idp or 0)
   return math.floor(num * mult + 0.5) / mult
 end
 
--- make a function that shortens numbers
 function shorten(num)
     local abbrv = {
         "",
@@ -48,6 +45,31 @@ function shorten(num)
     end
     return result
 end
+
+local systemMenu = pd.getSystemMenu()
+local confirmState = 0
+local confirmImage = gfx.image.new("images/confirm1")
+local confirmSprite = gfx.sprite.new(confirmImage)
+confirmSprite:moveTo(200, 120)
+confirmSprite:setZIndex(32767)
+local reseting = false
+local confirmTimer = pd.timer.new(500, function ()
+    confirmState = (confirmState + 1) % 2
+    confirmImage:load("images/confirm" .. confirmState + 1)
+end)
+confirmTimer.repeats = true
+systemMenu:addCheckmarkMenuItem("Dark Mode", true, function ()
+    pd.display.setInverted(not pd.display.getInverted())
+end)
+systemMenu:addCheckmarkMenuItem("Mini Drills", true, function (value)
+    showingChanged = true
+    showMiniDrills = value
+    print("changed to", value)
+    print(showMiniDrills)
+end)
+systemMenu:addMenuItem("Restart Game", function ()
+    reseting = true
+end)
 
 -- background
 local backgroundImage = gfx.image.new("images/background")
@@ -86,19 +108,17 @@ local drillHum = pd.sound.fileplayer.new(10)
 drillHum:load("sounds/hum")
 
 -- mini drills
--- local miniDrillState = 1
--- local miniDrillTable = gfx.imagetable.new("images/minidrill/minidrill")
--- local radian = 0.5 * math.pi
--- local miniDrillSprite = gfx.sprite.new(miniDrillTable:getImage(miniDrillState))
--- miniDrillSprite:setClipRect(243, 4, 153, 232)
--- miniDrillSprite:moveTo(395, 235)
--- miniDrillSprite:add()
-
+local miniDrillImage = gfx.image.new("images/minidrill")
+local radian = 0
+local layer = 0
+miniDrills = {}
+showMiniDrills = true
+showingChanged = false
 
 -- store
 local menuOptions = {"Drill", "Grandma", "Farm", "Mine", "Factory", "Bank", "Temple", "Wizard tower", "Shipment", "Alchemy Lab", "Portal", "Time Machine", "Antimatter Condenser", "Prism", "Chancemaker", "Fractal Engine", "Javascript Console", "Idleverse"}
 local menuOptionsUnlocked = 0
-local numberPurchased = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+numberPurchased = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 local prices = {15, 100, 1100, 12000, 130000, 1400000, 20000000, 330000000, 5100000000, 75000000000, 1000000000000, 14000000000000, 170000000000000, 2100000000000000, 26000000000000000, 310000000000000000, 71000000000000000000, 12000000000000000000000}
 local buying = true
 local buildingCpS = {.1, 1, 8, 47, 260, 1400, 7800, 44000, 260000, 1600000, 10000000, 65000000, 430000000, 2900000000, 21000000000, 150000000000, 1100000000000, 8300000000000}
@@ -148,18 +168,23 @@ if pd.datastore.read("save") ~= nil then
     for i = 1, #numberPurchased do
         CpS += buildingCpS[i] * numberPurchased[i]
     end
+    for i = 1, numberPurchased[1] do
+        miniDrills[i] = gfx.sprite.new(miniDrillImage)
+        miniDrills[i]:setClipRect(243, 4, 153, 232)
+        miniDrills[i]:add()
+    end
 else
     local save = {cookies, numberPurchased, menuOptionsUnlocked}
     pd.datastore.write(save, "save", true)
 end
 
-function playdate.gameWillTerminate()
+function pd.gameWillTerminate()
     -- load into save file
     save = {cookies, numberPurchased, menuOptionsUnlocked}
     pd.datastore.write(save, "save", true)
 end
 
-function playdate.deviceWillSleep()
+function pd.deviceWillSleep()
     -- load into save file
     save = {cookies, numberPurchased, menuOptionsUnlocked}
     pd.datastore.write(save, "save", true)
@@ -183,7 +208,7 @@ function pd.update()
         gfx.drawText("*Store*       " .. shorten(math.ceil(prices[store:getSelectedRow()])), 14, 10)
         gfx.drawTextAligned("_Buying_", 226, 10, kTextAlignment.right)
     else
-        gfx.drawText("*Store*       " .. shorten(math.ceil(prices[store:getSelectedRow()] / 10)), 14, 10)
+        gfx.drawText("*Store*       " .. shorten(math.ceil(prices[store:getSelectedRow()] / 11.5)), 14, 10)
         gfx.drawTextAligned("_Selling_", 226, 10, kTextAlignment.right)
     end
     store:drawInRect(9, 30, 225, 207)
@@ -198,12 +223,21 @@ function pd.update()
         CpS += buildingCpS[store:getSelectedRow()]
         numberPurchased[store:getSelectedRow()] += 1
         prices[store:getSelectedRow()] = prices[store:getSelectedRow()] * 1.15
+        if store:getSelection() == 1 and showMiniDrills then
+            miniDrills[numberPurchased[1]] = gfx.sprite.new(miniDrillImage)
+            miniDrills[numberPurchased[1]]:setClipRect(243, 4, 153, 232)
+            miniDrills[numberPurchased[1]]:add()
+            end
     end
     if pd.buttonJustPressed(pd.kButtonA) and not buying and numberPurchased[store:getSelectedRow()] > 0 then
-        cookies = cookies + math.ceil(prices[store:getSelectedRow()] / 10)
+        cookies = cookies + math.ceil(prices[store:getSelectedRow()] / 11.5)
         CpS -= buildingCpS[store:getSelectedRow()]
         numberPurchased[store:getSelectedRow()] -= 1
         prices[store:getSelectedRow()] = prices[store:getSelectedRow()] / 1.15
+        if store:getSelection() == 1 and showMiniDrills then
+            miniDrills[numberPurchased[1] + 1]:remove()
+            miniDrills[numberPurchased[1] + 1] = nil
+        end
     end
     if pd.buttonJustPressed(pd.kButtonB) then
         buying = not buying
@@ -243,11 +277,29 @@ function pd.update()
     end
 
     -- mini drill code
-    -- for i = 1, numberPurchased[1] do
-    --     miniDrillSprite:draw(250, i * 10 + 10)
-    -- end
-    --miniDrillSprite:moveTo(55 * math.sin(radian) + 320, 55 * math.cos(radian) + 160)
-    --miniDrillSprite:setRotation(270)
+    if showingChanged then
+        if showMiniDrills then
+            for i = 1, numberPurchased[1] do
+                miniDrills[i] = gfx.sprite.new(miniDrillImage)
+                miniDrills[i]:setClipRect(243, 4, 153, 232)
+                miniDrills[i]:add()
+            end
+        else
+            for i = 1, #miniDrills do
+                miniDrills[i]:remove()
+            end
+            miniDrills = {}
+        end
+        showingChanged = false
+    end
+    if showMiniDrills then
+        for i = 1, numberPurchased[1] do
+            layer = math.floor((i - 1) / 25)
+            miniDrills[i]:moveTo((55 + (15 * layer)) * math.sin((radian + (layer * (math.pi / 25))) + ((math.pi / 12.5) * i)) + 320, (-55 - (15 * layer)) * math.cos((radian + (layer * (math.pi / 25))) + ((math.pi / 12.5) * i)) + 160) -- calculates drill position around cookie
+            miniDrills[i]:setRotation(((math.pi + (radian + (layer * (math.pi / 25))) + ((math.pi / 12.5) * i)) % (2 * math.pi)) * (180 / math.pi))
+        end
+        radian = (radian + ((math.pi / 25) / FPS)) % (2 * math.pi)
+    end
 
     -- garbage collection
     if gcframes == gcint then
@@ -257,5 +309,27 @@ function pd.update()
         gcframes = gcframes + 1
     end
 
+    -- reset code
+    if reseting then
+        gfx.clear()
+        confirmSprite:setImage(confirmImage)
+        confirmSprite:add()
+        gfx.sprite.update()
+        if pd.buttonJustPressed(pd.kButtonA) then
+            reseting = false
+            save = {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0}
+            pd.datastore.write(save, "save", true)
+            cookies = 0
+            numberPurchased = save[2]
+            menuOptionsUnlocked = 0
+            confirmSprite:remove()
+        end
+        if pd.buttonJustPressed(pd.kButtonB) then
+            reseting = false
+            confirmSprite:remove()
+        end
+    end
+
+    
     pd.timer.updateTimers()
 end
