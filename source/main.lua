@@ -96,6 +96,7 @@ smallCookieSprite:add()
 -- cookies
 local cookies = 0
 local CpS = 0
+lastPlayed = 0
 
 -- drill
 local drillState = 1
@@ -159,6 +160,10 @@ if pd.datastore.read("save") ~= nil then
     if save[3] == nil then
         save[3] = menuOptionsUnlocked
     end
+    if save[4] == nil then
+        save[4] = pd.getSecondsSinceEpoch()
+    end
+    --game items
     cookies = save[1]
     numberPurchased = save[2]
     menuOptionsUnlocked = save[3]
@@ -173,21 +178,30 @@ if pd.datastore.read("save") ~= nil then
         miniDrills[i]:setClipRect(243, 4, 153, 232)
         miniDrills[i]:add()
     end
+    cookies += CpS * (pd.getSecondsSinceEpoch() - save[4])
 else
-    local save = {cookies, numberPurchased, menuOptionsUnlocked}
+    local save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getSecondsSinceEpoch()}
     pd.datastore.write(save, "save", true)
 end
 
 function pd.gameWillTerminate()
     -- load into save file
-    save = {cookies, numberPurchased, menuOptionsUnlocked}
+    save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getSecondsSinceEpoch()}
     pd.datastore.write(save, "save", true)
 end
 
 function pd.deviceWillSleep()
     -- load into save file
-    save = {cookies, numberPurchased, menuOptionsUnlocked}
+    save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getSecondsSinceEpoch()}
     pd.datastore.write(save, "save", true)
+end
+
+function pd.gameWillPause()
+    lastPlayed = pd.getSecondsSinceEpoch()
+end
+
+function pd.gameWillResume()
+    cookies += CpS * (pd.getSecondsSinceEpoch() - lastPlayed)
 end
 
 -- code
@@ -223,7 +237,7 @@ function pd.update()
         CpS += buildingCpS[store:getSelectedRow()]
         numberPurchased[store:getSelectedRow()] += 1
         prices[store:getSelectedRow()] = prices[store:getSelectedRow()] * 1.15
-        if store:getSelection() == 1 and showMiniDrills then
+        if store:getSelectedRow() == 1 and showMiniDrills then
             miniDrills[numberPurchased[1]] = gfx.sprite.new(miniDrillImage)
             miniDrills[numberPurchased[1]]:setClipRect(243, 4, 153, 232)
             miniDrills[numberPurchased[1]]:add()
@@ -234,7 +248,7 @@ function pd.update()
         CpS -= buildingCpS[store:getSelectedRow()]
         numberPurchased[store:getSelectedRow()] -= 1
         prices[store:getSelectedRow()] = prices[store:getSelectedRow()] / 1.15
-        if store:getSelection() == 1 and showMiniDrills then
+        if store:getSelectedRow() == 1 and showMiniDrills then
             miniDrills[numberPurchased[1] + 1]:remove()
             miniDrills[numberPurchased[1] + 1] = nil
         end
