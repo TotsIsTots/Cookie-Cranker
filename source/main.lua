@@ -58,14 +58,14 @@ local confirmTimer = pd.timer.new(500, function ()
     confirmImage:load("images/confirm" .. confirmState + 1)
 end)
 confirmTimer.repeats = true
-systemMenu:addCheckmarkMenuItem("Dark Mode", true, function ()
-    pd.display.setInverted(not pd.display.getInverted())
+systemMenu:addCheckmarkMenuItem("Dark Mode", true, function (value)
+    pd.display.setInverted(value)
 end)
 systemMenu:addCheckmarkMenuItem("Mini Drills", true, function (value)
-    showingChanged = true
+    if value ~= showMiniDrills then
+        showingChanged = true
+    end
     showMiniDrills = value
-    print("changed to", value)
-    print(showMiniDrills)
 end)
 systemMenu:addMenuItem("Restart Game", function ()
     reseting = true
