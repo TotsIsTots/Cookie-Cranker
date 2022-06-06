@@ -366,7 +366,7 @@ function pd.update()
         gfx.sprite.update()
         if pd.buttonJustPressed(pd.kButtonA) then
             reseting = false
-            save = {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0}
+            save = {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, pd.getGMTTime()}
             pd.datastore.write(save, "save", true)
             cookies = 0
             numberPurchased = save[2]

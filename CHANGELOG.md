@@ -1,5 +1,7 @@
 # Changelog
 
+v0.5.2 **Fixed** resetting *6/6/22*
+
 v0.5.1 **Fixed** offline cookie gathering _6/6/22_
 
 v0.5.0 **Fixed** building purchsing/selling and **Added** offline cookie gathering! _6/5/22_
