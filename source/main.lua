@@ -33,9 +33,9 @@ function getTimeDiff(t1, t2)
     local minuteDiff = t2["minute"] - t1["minute"]
     local secondDiff = t2["second"] - t1["second"]
     local millisecondDiff = t2["millisecond"] - t1["millisecond"]
-    return yearDiff * 365 * 24 * 60 * 60 + monthDiff * 30 * 24 * 60 * 60 + dayDiff * 24 * 60 * 60 + hourDiff * 60 * 60 + minuteDiff * 60 + secondDiff + millisecondDiff / 1000
+    return (yearDiff * 31536000) + (monthDiff * 2592000) + (dayDiff * 86400) + (hourDiff * 3600) + (minuteDiff * 60) + secondDiff + (millisecondDiff / 1000)
 end
-print(pd.getGMTTime()["year"])
+
 
 function round(num, idp)
   local mult = 10^(idp or 0)
@@ -376,6 +376,8 @@ function pd.update()
                 miniDrills[i]:remove()
             end
             miniDrills = {}
+            prices = {15, 100, 1100, 12000, 130000, 1400000, 20000000, 330000000, 5100000000, 75000000000, 1000000000000, 14000000000000, 170000000000000, 2100000000000000, 26000000000000000, 310000000000000000, 71000000000000000000, 12000000000000000000000}
+            store:setSelectedRow(1)
             confirmSprite:remove()
         end
         if pd.buttonJustPressed(pd.kButtonB) then

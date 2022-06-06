@@ -1,5 +1,7 @@
 # Changelog
 
+v0.5.3 **Fixed** restting and offline cookie gathering (for real this time maybe) *6/6/22*
+
 v0.5.2 **Fixed** resetting *6/6/22*
 
 v0.5.1 **Fixed** offline cookie gathering _6/6/22_
