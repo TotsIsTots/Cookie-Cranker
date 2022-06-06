@@ -19,6 +19,24 @@ pd.setCollectsGarbage(false)
 local gcint = 10
 local gcframes = 0
 
+function getEpoch()
+    s, ms = table.unpack{pd.getSecondsSinceEpoch()}
+    return s + (ms / 1000)
+end
+
+--find distance between two gmt time tables
+function getTimeDiff(t1, t2)
+    local yearDiff = t2["year"] - t1["year"]
+    local monthDiff = t2["month"] - t1["month"]
+    local dayDiff = t2["day"] - t1["day"]
+    local hourDiff = t2["hour"] - t1["hour"]
+    local minuteDiff = t2["minute"] - t1["minute"]
+    local secondDiff = t2["second"] - t1["second"]
+    local millisecondDiff = t2["millisecond"] - t1["millisecond"]
+    return yearDiff * 365 * 24 * 60 * 60 + monthDiff * 30 * 24 * 60 * 60 + dayDiff * 24 * 60 * 60 + hourDiff * 60 * 60 + minuteDiff * 60 + secondDiff + millisecondDiff / 1000
+end
+print(pd.getGMTTime()["year"])
+
 function round(num, idp)
   local mult = 10^(idp or 0)
   return math.floor(num * mult + 0.5) / mult
@@ -96,7 +114,7 @@ smallCookieSprite:add()
 -- cookies
 local cookies = 0
 local CpS = 0
-lastPlayed = 0
+lastPlayed = pd.getGMTTime()
 
 -- drill
 local drillState = 1
@@ -150,6 +168,19 @@ end
 -- load save
 if pd.datastore.read("save") ~= nil then
     local save = pd.datastore.read("save")
+    -- handle wrong types
+    if type(save[1]) ~= "number" then
+        save[1] = nil
+    end
+    if type(save[2]) ~= "table" then
+        save[2] = nil
+    end
+    if type(save[3]) ~= "number" then
+        save[3] = nil
+    end
+    if type(save[4]) ~= "table" then
+        save[4] = nil
+    end
     --handle nil values
     if save[1] == nil then
         save[1] = cookies
@@ -161,7 +192,7 @@ if pd.datastore.read("save") ~= nil then
         save[3] = menuOptionsUnlocked
     end
     if save[4] == nil then
-        save[4] = pd.getSecondsSinceEpoch()
+        save[4] = pd.getGMTTime()
     end
     --game items
     cookies = save[1]
@@ -178,30 +209,34 @@ if pd.datastore.read("save") ~= nil then
         miniDrills[i]:setClipRect(243, 4, 153, 232)
         miniDrills[i]:add()
     end
-    cookies += CpS * (pd.getSecondsSinceEpoch() - save[4])
+    cookies += CpS * getTimeDiff(save[4], pd.getGMTTime())
 else
-    local save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getSecondsSinceEpoch()}
+    local save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getGMTTime()}
     pd.datastore.write(save, "save", true)
 end
 
 function pd.gameWillTerminate()
     -- load into save file
-    save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getSecondsSinceEpoch()}
+    save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getGMTTime()}
     pd.datastore.write(save, "save", true)
 end
 
 function pd.deviceWillSleep()
     -- load into save file
-    save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getSecondsSinceEpoch()}
+    save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getGMTTime()}
     pd.datastore.write(save, "save", true)
 end
 
 function pd.gameWillPause()
-    lastPlayed = pd.getSecondsSinceEpoch()
+    lastPlayed = pd.getGMTTime()
 end
 
 function pd.gameWillResume()
-    cookies += CpS * (pd.getSecondsSinceEpoch() - lastPlayed)
+    cookies += CpS * getTimeDiff(lastPlayed, pd.getGMTTime())
+end
+
+function pd.deviceDidUnlock()
+    cookies += CpS * getTimeDiff(lastPlayed, pd.getGMTTime())
 end
 
 -- code
@@ -335,7 +370,12 @@ function pd.update()
             pd.datastore.write(save, "save", true)
             cookies = 0
             numberPurchased = save[2]
+            CpS = 0
             menuOptionsUnlocked = 0
+            for i = 1, #miniDrills do
+                miniDrills[i]:remove()
+            end
+            miniDrills = {}
             confirmSprite:remove()
         end
         if pd.buttonJustPressed(pd.kButtonB) then
@@ -344,6 +384,7 @@ function pd.update()
         end
     end
 
+    print(pd.getGMTTime())
     
     pd.timer.updateTimers()
 end
