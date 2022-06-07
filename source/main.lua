@@ -70,10 +70,10 @@ local confirmTimer = pd.timer.new(500, function ()
     confirmImage:load("images/confirm" .. confirmState + 1)
 end)
 confirmTimer.repeats = true
-systemMenu:addCheckmarkMenuItem("Dark Mode", true, function (value)
+menuDarkMode = systemMenu:addCheckmarkMenuItem("Dark Mode", true, function (value)
     pd.display.setInverted(value)
 end)
-systemMenu:addCheckmarkMenuItem("Mini Drills", true, function (value)
+menuMiniDrills = systemMenu:addCheckmarkMenuItem("Mini Drills", true, function (value)
     if value ~= showMiniDrills then
         showingChanged = true
     end
@@ -129,7 +129,9 @@ showMiniDrills = true
 showingChanged = false
 
 -- store
-local menuOptions = {"Drill", "Grandma", "Farm", "Mine", "Factory", "Bank", "Temple", "Wizard tower", "Shipment", "Alchemy Lab", "Portal", "Time Machine", "Antimatter Condenser", "Prism", "Chancemaker", "Fractal Engine", "Javascript Console", "Idleverse"}
+local menuOptions = {"Drill", "Grandma", "Farm", "Mine", "Factory", "Bank", "Temple", "Wizard Tower", "Shipment", "Alchemy Lab", "Portal", "Time Machine", "Antimatter Condenser", "Prism", "Chancemaker", "Fractal Engine", "Javascript Console", "Idleverse"}
+local storeImages = {gfx.image.new("images/Drill"), gfx.image.new("images/Grandma"), gfx.image.new("images/Farm"), gfx.image.new("images/Mine"), gfx.image.new("images/Factory"), gfx.image.new("images/Bank"), gfx.image.new("images/Temple"), gfx.image.new("images/WizardTower"), gfx.image.new("images/Shipment"), gfx.image.new("images/AlchemyLab"), gfx.image.new("images/Portal"), gfx.image.new("images/TimeMachine"), gfx.image.new("images/AntimatterCondenser"), gfx.image.new("images/Prism"), gfx.image.new("images/Chancemaker"), gfx.image.new("images/FractalEngine"), gfx.image.new("images/JavascriptConsole"), gfx.image.new("images/Idleverse")}
+local storeSprites = {gfx.sprite.new(storeImages[1]), gfx.sprite.new(storeImages[2]), gfx.sprite.new(storeImages[3]), gfx.sprite.new(storeImages[4]), gfx.sprite.new(storeImages[5]), gfx.sprite.new(storeImages[6]), gfx.sprite.new(storeImages[7]), gfx.sprite.new(storeImages[8]), gfx.sprite.new(storeImages[9]), gfx.sprite.new(storeImages[10]), gfx.sprite.new(storeImages[11]), gfx.sprite.new(storeImages[12]), gfx.sprite.new(storeImages[13]), gfx.sprite.new(storeImages[14]), gfx.sprite.new(storeImages[15]), gfx.sprite.new(storeImages[16]), gfx.sprite.new(storeImages[17]), gfx.sprite.new(storeImages[18])}
 local menuOptionsUnlocked = 0
 numberPurchased = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 local prices = {15, 100, 1100, 12000, 130000, 1400000, 20000000, 330000000, 5100000000, 75000000000, 1000000000000, 14000000000000, 170000000000000, 2100000000000000, 26000000000000000, 310000000000000000, 71000000000000000000, 12000000000000000000000}
@@ -148,9 +150,19 @@ function store:drawCell(section, row, column, selected, x, y, width, height)
             gfx.setImageDrawMode(gfx.kDrawModeCopy)
         end
         if row <= menuOptionsUnlocked then
-            gfx.drawTextInRect(menuOptions[row], x+5, y+2, width, height)
+            gfx.drawTextInRect(menuOptions[row], x+24, y+2, width, height)
+            if selected then
+                gfx.setImageDrawMode(gfx.kDrawModeInverted)
+            end
+            storeImages[row]:draw(x + 5, y + 2)
         else
-            gfx.drawTextInRect("???", x+5, y+2, width, height)
+            gfx.drawTextInRect("???", x+24, y+2, width, height)
+            if selected then
+                gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
+            else
+                gfx.setImageDrawMode(gfx.kDrawModeFillBlack)
+            end
+            storeImages[row]:draw(x + 5, y + 2)
         end
         gfx.setImageDrawMode(gfx.kDrawModeCopy)
         if numberPurchased[row] > 0 then
@@ -210,16 +222,50 @@ else
     pd.datastore.write(save, "save", true)
 end
 
+--load settings
+if pd.datastore.read("settings") ~= nil then
+    local settings = pd.datastore.read("settings")
+    -- handle wrong types
+    if type(settings[1]) ~= "boolean" then
+        settings[1] = nil
+    end
+    if type(settings[2]) ~= "boolean" then
+        settings[2] = nil
+    end
+    --handle nil values
+    if settings[1] == nil then
+        settings[1] = true
+    end
+    if settings[2] == nil then
+        settings[2] = true
+    end
+    --settings items
+    menuDarkMode:setValue(settings[1])
+    menuMiniDrills:setValue(settings[2])
+    pd.display.setInverted(settings[1])
+    if settings[2] ~= showMiniDrills then
+        showingChanged = true
+    end
+    showMiniDrills = settings[2]
+else
+    local settings = {true, true}
+    local settings = pd.datastore.write(settings, "settings", true)
+end
+
 function pd.gameWillTerminate()
     -- load into save file
     save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getGMTTime()}
     pd.datastore.write(save, "save", true)
+    local settings = {menuDarkMode:getValue(), menuMiniDrills:getValue()}
+    local settings = pd.datastore.write(settings, "settings", true)
 end
 
 function pd.deviceWillSleep()
     -- load into save file
     save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getGMTTime()}
     pd.datastore.write(save, "save", true)
+    local settings = {menuDarkMode:getValue(), menuMiniDrills:getValue()}
+    local settings = pd.datastore.write(settings, "settings", true)
 end
 
 function pd.gameWillPause()

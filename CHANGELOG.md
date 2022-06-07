@@ -1,5 +1,7 @@
 # Changelog
 
+v0.6.0 **Added** settings saving and building images *6/7/22*
+
 v0.5.4 **Fixed**(?) offline cookie gathering (oh God please) *6/6/22*
 
 v0.5.3 **Fixed** resetting and offline cookie gathering (for real this time maybe) *6/6/22*
