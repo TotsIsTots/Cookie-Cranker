@@ -19,11 +19,6 @@ pd.setCollectsGarbage(false)
 local gcint = 10
 local gcframes = 0
 
-function getEpoch()
-    s, ms = table.unpack{pd.getSecondsSinceEpoch()}
-    return s + (ms / 1000)
-end
-
 --find distance between two gmt time tables
 function getTimeDiff(t1, t2)
     local yearDiff = t2["year"] - t1["year"]
@@ -35,7 +30,6 @@ function getTimeDiff(t1, t2)
     local millisecondDiff = t2["millisecond"] - t1["millisecond"]
     return (yearDiff * 31536000) + (monthDiff * 2592000) + (dayDiff * 86400) + (hourDiff * 3600) + (minuteDiff * 60) + secondDiff + (millisecondDiff / 1000)
 end
-
 
 function round(num, idp)
   local mult = 10^(idp or 0)
@@ -114,7 +108,7 @@ smallCookieSprite:add()
 -- cookies
 local cookies = 0
 local CpS = 0
-lastPlayed = pd.getGMTTime()
+local lastPlayed = pd.getGMTTime()
 
 -- drill
 local drillState = 1
@@ -198,6 +192,7 @@ if pd.datastore.read("save") ~= nil then
     cookies = save[1]
     numberPurchased = save[2]
     menuOptionsUnlocked = save[3]
+    lastPlayed = save[4]
     for i = 1, #numberPurchased do
         prices[i] = prices[i] * (1.15 ^ numberPurchased[i])
     end
@@ -231,6 +226,10 @@ function pd.gameWillPause()
     lastPlayed = pd.getGMTTime()
 end
 
+function pd.deviceWillLock()
+    lastPlayed = pd.getGMTTime()
+end
+
 function pd.gameWillResume()
     cookies += CpS * getTimeDiff(lastPlayed, pd.getGMTTime())
 end
@@ -257,7 +256,7 @@ function pd.update()
         gfx.drawText("*Store*       " .. shorten(math.ceil(prices[store:getSelectedRow()])), 14, 10)
         gfx.drawTextAligned("_Buying_", 226, 10, kTextAlignment.right)
     else
-        gfx.drawText("*Store*       " .. shorten(math.ceil(prices[store:getSelectedRow()] / 11.5)), 14, 10)
+        gfx.drawText("*Store*       " .. shorten(math.ceil(prices[store:getSelectedRow()] / 4.6)), 14, 10)
         gfx.drawTextAligned("_Selling_", 226, 10, kTextAlignment.right)
     end
     store:drawInRect(9, 30, 225, 207)
@@ -279,7 +278,7 @@ function pd.update()
             end
     end
     if pd.buttonJustPressed(pd.kButtonA) and not buying and numberPurchased[store:getSelectedRow()] > 0 then
-        cookies = cookies + math.ceil(prices[store:getSelectedRow()] / 11.5)
+        cookies = cookies + math.ceil(prices[store:getSelectedRow()] / 4.6)
         CpS -= buildingCpS[store:getSelectedRow()]
         numberPurchased[store:getSelectedRow()] -= 1
         prices[store:getSelectedRow()] = prices[store:getSelectedRow()] / 1.15
