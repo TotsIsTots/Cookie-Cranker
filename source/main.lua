@@ -12,8 +12,6 @@ local lastTime = 0
 local preFPS = 15 --15 is an initial fps guess, can't be nil because
 local FPS = 15    --math is nescessary for FPS calculation to work
 
-pd.display.setInverted(true)
-
 -- Garbage collection
 pd.setCollectsGarbage(false)
 local gcint = 10
@@ -36,7 +34,7 @@ function round(num, idp)
   return math.floor(num * mult + 0.5) / mult
 end
 
-function shorten(num)
+function abbreviate(num)
     local abbrv = {
         "",
         "k",
@@ -102,7 +100,7 @@ cookieSprite:add()
 -- little cookie
 local smallCookieImage = gfx.image.new("images/smallcookie")
 local smallCookieSprite = gfx.sprite.new(smallCookieImage)
-smallCookieSprite:moveTo(83, 18)
+smallCookieSprite:moveTo(83, 16)
 smallCookieSprite:add()
 
 -- cookies
@@ -140,6 +138,7 @@ local buildingCpS = {.1, 1, 8, 47, 260, 1400, 7800, 44000, 260000, 1600000, 1000
 local store = pd.ui.gridview.new(0, 20)
 store:setNumberOfRows(menuOptionsUnlocked)
 store:setContentInset(0, 0, 1, 1)
+store:setCellPadding(0, 0, 1, 1)
 
 function store:drawCell(section, row, column, selected, x, y, width, height)
     if row <= menuOptionsUnlocked + 2 then
@@ -166,7 +165,7 @@ function store:drawCell(section, row, column, selected, x, y, width, height)
         end
         gfx.setImageDrawMode(gfx.kDrawModeCopy)
         if numberPurchased[row] > 0 then
-            gfx.drawTextInRect(shorten(numberPurchased[row]), x+width-64, y+2, 56, height, nil, nil, kTextAlignment.right)
+            gfx.drawTextInRect(abbreviate(numberPurchased[row]), x+width-64, y+2, 56, height, nil, nil, kTextAlignment.right)
         end
     end
 end
@@ -234,7 +233,7 @@ if pd.datastore.read("settings") ~= nil then
     end
     --handle nil values
     if settings[1] == nil then
-        settings[1] = true
+        settings[1] = false
     end
     if settings[2] == nil then
         settings[2] = true
@@ -248,7 +247,7 @@ if pd.datastore.read("settings") ~= nil then
     end
     showMiniDrills = settings[2]
 else
-    local settings = {true, true}
+    local settings = {false, true}
     local settings = pd.datastore.write(settings, "settings", true)
 end
 
@@ -299,13 +298,22 @@ function pd.update()
 
     -- store code
     if buying then
-        gfx.drawText("*Store*       " .. shorten(math.ceil(prices[store:getSelectedRow()])), 14, 10)
-        gfx.drawTextAligned("_Buying_", 226, 10, kTextAlignment.right)
+        gfx.drawText("*Store*       " .. abbreviate(math.ceil(prices[store:getSelectedRow()])), 14, 8)
+        gfx.drawTextAligned("_Buying_", 226, 8, kTextAlignment.right)
+        if(store:getSelectedRow() <= menuOptionsUnlocked) then
+            gfx.drawText("+" .. abbreviate(buildingCpS[store:getSelectedRow()]) .. " CpS", 14, 196)
+        end
     else
-        gfx.drawText("*Store*       " .. shorten(math.ceil(prices[store:getSelectedRow()] / 4.6)), 14, 10)
-        gfx.drawTextAligned("_Selling_", 226, 10, kTextAlignment.right)
+        gfx.drawText("*Store*       " .. abbreviate(math.ceil(prices[store:getSelectedRow()] / 4.6)), 14, 8)
+        gfx.drawTextAligned("_Selling_", 226, 8, kTextAlignment.right)
+        if(store:getSelectedRow() <= menuOptionsUnlocked) then
+            gfx.drawText("-" .. abbreviate(buildingCpS[store:getSelectedRow()]) .. " CpS", 14, 196)
+        end
     end
-    store:drawInRect(9, 30, 225, 207)
+    if(store:getSelectedRow() <= menuOptionsUnlocked) then
+        gfx.drawText(abbreviate(buildingCpS[store:getSelectedRow()] * numberPurchased[store:getSelectedRow()]) .. " total (" .. round((buildingCpS[store:getSelectedRow()] * numberPurchased[store:getSelectedRow()]) / (CpS / 100), 1) .. "% of CpS)", 14, 216)
+    end
+    store:drawInRect(9, 30, 225, 160)
     if pd.buttonJustPressed(pd.kButtonDown) then
         store:selectNextRow(1)
     end
@@ -321,7 +329,7 @@ function pd.update()
             miniDrills[numberPurchased[1]] = gfx.sprite.new(miniDrillImage)
             miniDrills[numberPurchased[1]]:setClipRect(243, 4, 153, 232)
             miniDrills[numberPurchased[1]]:add()
-            end
+        end
     end
     if pd.buttonJustPressed(pd.kButtonA) and not buying and numberPurchased[store:getSelectedRow()] > 0 then
         cookies = cookies + math.ceil(prices[store:getSelectedRow()] / 4.6)
@@ -348,12 +356,10 @@ function pd.update()
     menuOptionsUnlocked = math.max(numberOfPrices, menuOptionsUnlocked)
     store:setNumberOfRows(menuOptionsUnlocked + 2)
 
-    gfx.drawLine(240, 4, 240, 236, 5) -- dividing line
-
     -- cookie code
     cookies += math.abs(crankSpeed/360)
-    gfx.drawTextAligned(shorten(math.floor(cookies)) .. " cookies", 320, 10, kTextAlignment.center) -- cookie count
-    gfx.drawTextAligned(shorten(CpS) .. " CpS", 320, 30, kTextAlignment.center) -- CpS
+    gfx.drawTextAligned("*" .. abbreviate(math.floor(cookies)) .. " cookies*", 320, 10, kTextAlignment.center) -- cookie count
+    gfx.drawTextAligned("*" .. abbreviate(CpS) .. " CpS*", 320, 30, kTextAlignment.center) -- CpS
     cookies += CpS / FPS
 
     -- drill code
@@ -431,7 +437,5 @@ function pd.update()
         end
     end
 
-    print(pd.getGMTTime())
-    
     pd.timer.updateTimers()
 end

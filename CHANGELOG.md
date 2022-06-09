@@ -1,5 +1,7 @@
 # Changelog
 
+v0.7.0 **Added** CpS indicators and Background changes *6/9/22*
+
 v0.6.0 **Added** settings saving and building images *6/7/22*
 
 v0.5.4 **Fixed**(?) offline cookie gathering (oh God please) *6/6/22*
