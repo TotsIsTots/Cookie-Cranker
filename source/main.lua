@@ -30,9 +30,13 @@ function getTimeDiff(t1, t2)
 end
 
 function round(num, idp)
-  local mult = 10^(idp or 0)
-  return math.floor(num * mult + 0.5) / mult
+    local mult = 10 ^ (idp or 0)
+    if math.floor(num * mult + 0.5) / mult == nil then
+        return 0
+    end
+    return math.floor(num * mult + 0.5) / mult
 end
+
 
 function abbreviate(num)
     local abbrv = {
@@ -70,6 +74,11 @@ end)
 confirmTimer.repeats = true
 menuDarkMode = systemMenu:addCheckmarkMenuItem("Dark Mode", true, function (value)
     pd.display.setInverted(value)
+    if value then
+        cookieSprite:setImageDrawMode(gfx.kDrawModeInverted)
+    else
+        cookieSprite:setImageDrawMode(gfx.kDrawModeCopy)
+    end
 end)
 menuMiniDrills = systemMenu:addCheckmarkMenuItem("Mini Drills", true, function (value)
     if value ~= showMiniDrills then
@@ -93,7 +102,7 @@ gfx.sprite.setBackgroundDrawingCallback(
 
 -- big cookie
 local cookieImage = gfx.image.new("images/cookie")
-local cookieSprite = gfx.sprite.new(cookieImage)
+cookieSprite = gfx.sprite.new(cookieImage)
 cookieSprite:moveTo(320, 160)
 cookieSprite:add()
 
@@ -129,7 +138,6 @@ showingChanged = false
 -- store
 local menuOptions = {"Drill", "Grandma", "Farm", "Mine", "Factory", "Bank", "Temple", "Wizard Tower", "Shipment", "Alchemy Lab", "Portal", "Time Machine", "Antimatter Condenser", "Prism", "Chancemaker", "Fractal Engine", "Javascript Console", "Idleverse"}
 local storeImages = {gfx.image.new("images/Drill"), gfx.image.new("images/Grandma"), gfx.image.new("images/Farm"), gfx.image.new("images/Mine"), gfx.image.new("images/Factory"), gfx.image.new("images/Bank"), gfx.image.new("images/Temple"), gfx.image.new("images/WizardTower"), gfx.image.new("images/Shipment"), gfx.image.new("images/AlchemyLab"), gfx.image.new("images/Portal"), gfx.image.new("images/TimeMachine"), gfx.image.new("images/AntimatterCondenser"), gfx.image.new("images/Prism"), gfx.image.new("images/Chancemaker"), gfx.image.new("images/FractalEngine"), gfx.image.new("images/JavascriptConsole"), gfx.image.new("images/Idleverse")}
-local storeSprites = {gfx.sprite.new(storeImages[1]), gfx.sprite.new(storeImages[2]), gfx.sprite.new(storeImages[3]), gfx.sprite.new(storeImages[4]), gfx.sprite.new(storeImages[5]), gfx.sprite.new(storeImages[6]), gfx.sprite.new(storeImages[7]), gfx.sprite.new(storeImages[8]), gfx.sprite.new(storeImages[9]), gfx.sprite.new(storeImages[10]), gfx.sprite.new(storeImages[11]), gfx.sprite.new(storeImages[12]), gfx.sprite.new(storeImages[13]), gfx.sprite.new(storeImages[14]), gfx.sprite.new(storeImages[15]), gfx.sprite.new(storeImages[16]), gfx.sprite.new(storeImages[17]), gfx.sprite.new(storeImages[18])}
 local menuOptionsUnlocked = 0
 numberPurchased = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 local prices = {15, 100, 1100, 12000, 130000, 1400000, 20000000, 330000000, 5100000000, 75000000000, 1000000000000, 14000000000000, 170000000000000, 2100000000000000, 26000000000000000, 310000000000000000, 71000000000000000000, 12000000000000000000000}
@@ -241,6 +249,11 @@ if pd.datastore.read("settings") ~= nil then
     --settings items
     menuDarkMode:setValue(settings[1])
     menuMiniDrills:setValue(settings[2])
+    if settings[1] then
+        cookieSprite:setImageDrawMode(gfx.kDrawModeInverted)
+    else
+        cookieSprite:setImageDrawMode(gfx.kDrawModeCopy)
+    end
     pd.display.setInverted(settings[1])
     if settings[2] ~= showMiniDrills then
         showingChanged = true
@@ -284,6 +297,7 @@ function pd.deviceDidUnlock()
 end
 
 -- code
+
 function pd.update()
     gfx.sprite.update()
 
