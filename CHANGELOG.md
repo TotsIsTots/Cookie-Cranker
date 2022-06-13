@@ -1,5 +1,7 @@
 # Changelog
 
+v0.7.2 **Fixed** Big cookie blinking when switching dark mode *6/12/22*
+
 v0.7.1 **Changed** cookie image to be dithered instead of the high contrast of original *6/9/22*
 
 v0.7.0 **Added** CpS indicators and Background changes *6/9/22*

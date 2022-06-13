@@ -73,12 +73,13 @@ local confirmTimer = pd.timer.new(500, function ()
 end)
 confirmTimer.repeats = true
 menuDarkMode = systemMenu:addCheckmarkMenuItem("Dark Mode", true, function (value)
-    pd.display.setInverted(value)
     if value then
         cookieSprite:setImageDrawMode(gfx.kDrawModeInverted)
     else
         cookieSprite:setImageDrawMode(gfx.kDrawModeCopy)
     end
+    cookieSprite:update()
+    pd.display.setInverted(value)
 end)
 menuMiniDrills = systemMenu:addCheckmarkMenuItem("Mini Drills", true, function (value)
     if value ~= showMiniDrills then
