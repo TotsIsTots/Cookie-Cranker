@@ -10,7 +10,7 @@ local easedCrankSpeed = 0
 local crankSpeed = 0
 local lastTime = 0
 local preFPS = 15 --15 is an initial fps guess, can't be nil because
-local FPS = 15    --math is nescessary for FPS calculation to work
+local FPS = 15 --math is nescessary for FPS calculation to work
 
 -- Garbage collection
 pd.setCollectsGarbage(false)
@@ -26,7 +26,8 @@ function getTimeDiff(t1, t2)
     local minuteDiff = t2["minute"] - t1["minute"]
     local secondDiff = t2["second"] - t1["second"]
     local millisecondDiff = t2["millisecond"] - t1["millisecond"]
-    return (yearDiff * 31536000) + (monthDiff * 2592000) + (dayDiff * 86400) + (hourDiff * 3600) + (minuteDiff * 60) + secondDiff + (millisecondDiff / 1000)
+    return (yearDiff * 31536000) + (monthDiff * 2592000) + (dayDiff * 86400) + (hourDiff * 3600) + (minuteDiff * 60) +
+        secondDiff + (millisecondDiff / 1000)
 end
 
 function round(num, idp)
@@ -36,7 +37,6 @@ function round(num, idp)
     end
     return math.floor(num * mult + 0.5) / mult
 end
-
 
 function abbreviate(num)
     local abbrv = {
@@ -51,14 +51,24 @@ function abbreviate(num)
         "S",
         "o",
         "n",
-        "d"
+        "d",
+        "N/A"
     }
-    local result = round(num / 10 ^ (math.max(math.floor(math.log(num, 10) / 3), 0) * 3), 3) .. abbrv[math.max(math.floor(math.log(num, 10) / 3) + 1, 1)]
+    local result = round(num / 10 ^ (math.max(math.floor(math.log(num, 10) / 3), 0) * 3), 3) ..
+        abbrv[math.max(math.min(math.floor(math.log(num, 10) / 3) + 1, 13), 1)]
     if num < 1000 then
         result = string.gsub(result, "%.0", "")
     end
     return result
 end
+
+-- local fontPaths = {
+--     [playdate.graphics.font.kVariantNormal] = "fonts/Merriweather-Black",
+--     [playdate.graphics.font.kVariantBold] = "fonts/Merriweather-Bold",
+--     [playdate.graphics.font.kVariantItalic] = "fonts/Merriweather-BlackItalic",
+-- }
+-- local merriweatherFont = gfx.font.newFamily(fontPaths)
+-- --gfx.setFontFamily(merriweatherFont)
 
 local systemMenu = pd.getSystemMenu()
 local confirmState = 0
@@ -67,12 +77,12 @@ local confirmSprite = gfx.sprite.new(confirmImage)
 confirmSprite:moveTo(200, 120)
 confirmSprite:setZIndex(32767)
 local reseting = false
-local confirmTimer = pd.timer.new(500, function ()
+local confirmTimer = pd.timer.new(500, function()
     confirmState = (confirmState + 1) % 2
     confirmImage:load("images/confirm" .. confirmState + 1)
 end)
 confirmTimer.repeats = true
-menuDarkMode = systemMenu:addCheckmarkMenuItem("Dark Mode", true, function (value)
+menuDarkMode = systemMenu:addCheckmarkMenuItem("Dark Mode", true, function(value)
     if value then
         cookieSprite:setImageDrawMode(gfx.kDrawModeInverted)
     else
@@ -81,13 +91,13 @@ menuDarkMode = systemMenu:addCheckmarkMenuItem("Dark Mode", true, function (valu
     cookieSprite:update()
     pd.display.setInverted(value)
 end)
-menuMiniDrills = systemMenu:addCheckmarkMenuItem("Mini Drills", true, function (value)
+menuMiniDrills = systemMenu:addCheckmarkMenuItem("Mini Drills", true, function(value)
     if value ~= showMiniDrills then
         showingChanged = true
     end
     showMiniDrills = value
 end)
-systemMenu:addMenuItem("Restart Game", function ()
+systemMenu:addMenuItem("Restart Game", function()
     reseting = true
 end)
 
@@ -137,13 +147,23 @@ showMiniDrills = true
 showingChanged = false
 
 -- store
-local menuOptions = {"Drill", "Grandma", "Farm", "Mine", "Factory", "Bank", "Temple", "Wizard Tower", "Shipment", "Alchemy Lab", "Portal", "Time Machine", "Antimatter Condenser", "Prism", "Chancemaker", "Fractal Engine", "Javascript Console", "Idleverse"}
-local storeImages = {gfx.image.new("images/Drill"), gfx.image.new("images/Grandma"), gfx.image.new("images/Farm"), gfx.image.new("images/Mine"), gfx.image.new("images/Factory"), gfx.image.new("images/Bank"), gfx.image.new("images/Temple"), gfx.image.new("images/WizardTower"), gfx.image.new("images/Shipment"), gfx.image.new("images/AlchemyLab"), gfx.image.new("images/Portal"), gfx.image.new("images/TimeMachine"), gfx.image.new("images/AntimatterCondenser"), gfx.image.new("images/Prism"), gfx.image.new("images/Chancemaker"), gfx.image.new("images/FractalEngine"), gfx.image.new("images/JavascriptConsole"), gfx.image.new("images/Idleverse")}
+local menuOptions = { "Drill", "Grandma", "Farm", "Mine", "Factory", "Bank", "Temple", "Wizard Tower", "Shipment",
+    "Alchemy Lab", "Portal", "Time Machine", "Antimatter Condenser", "Prism", "Chancemaker", "Fractal Engine",
+    "Javascript Console", "Idleverse" }
+local storeImages = { gfx.image.new("images/Drill"), gfx.image.new("images/Grandma"), gfx.image.new("images/Farm"),
+    gfx.image.new("images/Mine"), gfx.image.new("images/Factory"), gfx.image.new("images/Bank"),
+    gfx.image.new("images/Temple"), gfx.image.new("images/WizardTower"), gfx.image.new("images/Shipment"),
+    gfx.image.new("images/AlchemyLab"), gfx.image.new("images/Portal"), gfx.image.new("images/TimeMachine"),
+    gfx.image.new("images/AntimatterCondenser"), gfx.image.new("images/Prism"), gfx.image.new("images/Chancemaker"),
+    gfx.image.new("images/FractalEngine"), gfx.image.new("images/JavascriptConsole"), gfx.image.new("images/Idleverse") }
 local menuOptionsUnlocked = 0
-numberPurchased = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-local prices = {15, 100, 1100, 12000, 130000, 1400000, 20000000, 330000000, 5100000000, 75000000000, 1000000000000, 14000000000000, 170000000000000, 2100000000000000, 26000000000000000, 310000000000000000, 71000000000000000000, 12000000000000000000000}
+numberPurchased = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+local prices = { 15, 100, 1100, 12000, 130000, 1400000, 20000000, 330000000, 5100000000, 75000000000, 1000000000000,
+    14000000000000, 170000000000000, 2100000000000000, 26000000000000000, 310000000000000000, 71000000000000000000,
+    12000000000000000000000 }
 local buying = true
-local buildingCpS = {.1, 1, 8, 47, 260, 1400, 7800, 44000, 260000, 1600000, 10000000, 65000000, 430000000, 2900000000, 21000000000, 150000000000, 1100000000000, 8300000000000}
+local buildingCpS = { .1, 1, 8, 47, 260, 1400, 7800, 44000, 260000, 1600000, 10000000, 65000000, 430000000, 2900000000,
+    21000000000, 150000000000, 1100000000000, 8300000000000 }
 local store = pd.ui.gridview.new(0, 20)
 store:setNumberOfRows(menuOptionsUnlocked)
 store:setContentInset(0, 0, 1, 1)
@@ -158,13 +178,13 @@ function store:drawCell(section, row, column, selected, x, y, width, height)
             gfx.setImageDrawMode(gfx.kDrawModeCopy)
         end
         if row <= menuOptionsUnlocked then
-            gfx.drawTextInRect(menuOptions[row], x+24, y+2, width, height)
+            gfx.drawTextInRect(menuOptions[row], x + 24, y + 2, width, height)
             if selected then
                 gfx.setImageDrawMode(gfx.kDrawModeInverted)
             end
             storeImages[row]:draw(x + 5, y + 2)
         else
-            gfx.drawTextInRect("???", x+24, y+2, width, height)
+            gfx.drawTextInRect("???", x + 24, y + 2, width, height)
             if selected then
                 gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
             else
@@ -174,7 +194,8 @@ function store:drawCell(section, row, column, selected, x, y, width, height)
         end
         gfx.setImageDrawMode(gfx.kDrawModeCopy)
         if numberPurchased[row] > 0 then
-            gfx.drawTextInRect(abbreviate(numberPurchased[row]), x+width-64, y+2, 56, height, nil, nil, kTextAlignment.right)
+            gfx.drawTextInRect(abbreviate(numberPurchased[row]), x + width - 64, y + 2, 56, height, nil, nil,
+                kTextAlignment.right)
         end
     end
 end
@@ -226,7 +247,7 @@ if pd.datastore.read("save") ~= nil then
     end
     cookies += CpS * getTimeDiff(save[4], pd.getGMTTime())
 else
-    local save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getGMTTime()}
+    local save = { cookies, numberPurchased, menuOptionsUnlocked, pd.getGMTTime() }
     pd.datastore.write(save, "save", true)
 end
 
@@ -261,23 +282,23 @@ if pd.datastore.read("settings") ~= nil then
     end
     showMiniDrills = settings[2]
 else
-    local settings = {false, true}
+    local settings = { false, true }
     local settings = pd.datastore.write(settings, "settings", true)
 end
 
 function pd.gameWillTerminate()
     -- load into save file
-    save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getGMTTime()}
+    save = { cookies, numberPurchased, menuOptionsUnlocked, pd.getGMTTime() }
     pd.datastore.write(save, "save", true)
-    local settings = {menuDarkMode:getValue(), menuMiniDrills:getValue()}
+    local settings = { menuDarkMode:getValue(), menuMiniDrills:getValue() }
     local settings = pd.datastore.write(settings, "settings", true)
 end
 
 function pd.deviceWillSleep()
     -- load into save file
-    save = {cookies, numberPurchased, menuOptionsUnlocked, pd.getGMTTime()}
+    save = { cookies, numberPurchased, menuOptionsUnlocked, pd.getGMTTime() }
     pd.datastore.write(save, "save", true)
-    local settings = {menuDarkMode:getValue(), menuMiniDrills:getValue()}
+    local settings = { menuDarkMode:getValue(), menuMiniDrills:getValue() }
     local settings = pd.datastore.write(settings, "settings", true)
 end
 
@@ -315,18 +336,21 @@ function pd.update()
     if buying then
         gfx.drawText("*Store*       " .. abbreviate(math.ceil(prices[store:getSelectedRow()])), 14, 8)
         gfx.drawTextAligned("_Buying_", 226, 8, kTextAlignment.right)
-        if(store:getSelectedRow() <= menuOptionsUnlocked) then
+        if (store:getSelectedRow() <= menuOptionsUnlocked) then
             gfx.drawText("+" .. abbreviate(buildingCpS[store:getSelectedRow()]) .. " CpS", 14, 196)
         end
     else
         gfx.drawText("*Store*       " .. abbreviate(math.ceil(prices[store:getSelectedRow()] / 4.6)), 14, 8)
         gfx.drawTextAligned("_Selling_", 226, 8, kTextAlignment.right)
-        if(store:getSelectedRow() <= menuOptionsUnlocked) then
+        if (store:getSelectedRow() <= menuOptionsUnlocked) then
             gfx.drawText("-" .. abbreviate(buildingCpS[store:getSelectedRow()]) .. " CpS", 14, 196)
         end
     end
-    if(store:getSelectedRow() <= menuOptionsUnlocked) then
-        gfx.drawText(abbreviate(buildingCpS[store:getSelectedRow()] * numberPurchased[store:getSelectedRow()]) .. " total (" .. round((buildingCpS[store:getSelectedRow()] * numberPurchased[store:getSelectedRow()]) / (CpS / 100), 1) .. "% of CpS)", 14, 216)
+    if (store:getSelectedRow() <= menuOptionsUnlocked) then
+        gfx.drawText(abbreviate(buildingCpS[store:getSelectedRow()] * numberPurchased[store:getSelectedRow()]) ..
+            " total (" ..
+            round((buildingCpS[store:getSelectedRow()] * numberPurchased[store:getSelectedRow()]) / (CpS / 100), 1) ..
+            "% of CpS)", 14, 216)
     end
     store:drawInRect(9, 30, 225, 160)
     if pd.buttonJustPressed(pd.kButtonDown) then
@@ -372,7 +396,7 @@ function pd.update()
     store:setNumberOfRows(menuOptionsUnlocked + 2)
 
     -- cookie code
-    cookies += math.abs(crankSpeed/360)
+    cookies += math.abs(crankSpeed / 360)
     gfx.drawTextAligned("*" .. abbreviate(math.floor(cookies)) .. " cookies*", 320, 10, kTextAlignment.center) -- cookie count
     gfx.drawTextAligned("*" .. abbreviate(CpS) .. " CpS*", 320, 30, kTextAlignment.center) -- CpS
     cookies += CpS / FPS
@@ -382,10 +406,10 @@ function pd.update()
     drillSprite:setImage(drillTable:getImage(drillState))
     if easedCrankSpeed ~= 0 then
         if drillHum:isPlaying() then
-            drillHum:setRate(math.abs(easedCrankSpeed/80))
+            drillHum:setRate(math.abs(easedCrankSpeed / 80))
         else
             drillHum:play(0)
-            drillHum:setRate(math.abs(easedCrankSpeed/80))
+            drillHum:setRate(math.abs(easedCrankSpeed / 80))
         end
     else
         drillHum:stop()
@@ -410,8 +434,12 @@ function pd.update()
     if showMiniDrills then
         for i = 1, numberPurchased[1] do
             layer = math.floor((i - 1) / 25)
-            miniDrills[i]:moveTo((55 + (15 * layer)) * math.sin((radian + (layer * (math.pi / 25))) + ((math.pi / 12.5) * i)) + 320, (-55 - (15 * layer)) * math.cos((radian + (layer * (math.pi / 25))) + ((math.pi / 12.5) * i)) + 160) -- calculates drill position around cookie
-            miniDrills[i]:setRotation(((math.pi + (radian + (layer * (math.pi / 25))) + ((math.pi / 12.5) * i)) % (2 * math.pi)) * (180 / math.pi))
+            miniDrills[i]:moveTo((55 + (15 * layer)) *
+                math.sin((radian + (layer * (math.pi / 25))) + ((math.pi / 12.5) * i)) + 320,
+                (-55 - (15 * layer)) * math.cos((radian + (layer * (math.pi / 25))) + ((math.pi / 12.5) * i)) + 160) -- calculates drill position around cookie
+            miniDrills[i]:setRotation((
+                (math.pi + (radian + (layer * (math.pi / 25))) + ((math.pi / 12.5) * i)) % (2 * math.pi)) *
+                (180 / math.pi))
         end
         radian = (radian + ((math.pi / 25) / FPS)) % (2 * math.pi)
     end
@@ -432,7 +460,7 @@ function pd.update()
         gfx.sprite.update()
         if pd.buttonJustPressed(pd.kButtonA) then
             reseting = false
-            save = {0, {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, pd.getGMTTime()}
+            save = { 0, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, 0, pd.getGMTTime() }
             pd.datastore.write(save, "save", true)
             cookies = 0
             numberPurchased = save[2]
@@ -442,7 +470,9 @@ function pd.update()
                 miniDrills[i]:remove()
             end
             miniDrills = {}
-            prices = {15, 100, 1100, 12000, 130000, 1400000, 20000000, 330000000, 5100000000, 75000000000, 1000000000000, 14000000000000, 170000000000000, 2100000000000000, 26000000000000000, 310000000000000000, 71000000000000000000, 12000000000000000000000}
+            prices = { 15, 100, 1100, 12000, 130000, 1400000, 20000000, 330000000, 5100000000, 75000000000, 1000000000000,
+                14000000000000, 170000000000000, 2100000000000000, 26000000000000000, 310000000000000000,
+                71000000000000000000, 12000000000000000000000 }
             store:setSelectedRow(1)
             confirmSprite:remove()
         end
